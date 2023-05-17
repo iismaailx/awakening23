@@ -17,7 +17,7 @@ def duplicate(sourcepath, targetpath, n):
     for j, duplicate_image in enumerate(duplicate_images):
         outputFileName = os.path.join(targetpath, f'images{j}.jpg')
         cv2.imwrite(outputFileName, duplicate_image)
-
+    print("-"*30)
     print(f"Images in duplicate {n} pieces")
     
 def aug_images(source_directory, target_directory):
@@ -49,19 +49,27 @@ def aug_images(source_directory, target_directory):
         for i, augmented_image in enumerate(augmented_images):
             new_file_name = f"a5{file_name}"
             new_image_path = os.path.join(target_directory, new_file_name)
-            cv2.imwrite(new_image_path, augmented_image)
-    print("image saved!")
+            cv2.imwrite(new_image_path, augmented_image)      
+    print("-"*30)
+    print("Image saved!".center(30))
 
-def moveddata(source_dir, folder):
-    # Ganti seusuai dengan path yang di inginkan
-    pathtrain = r'F:\CAPSTONE\dataset\RAM\Train'
-    pathtest = r'F:\CAPSTONE\dataset\RAM\Test'
-    pathval = r'F:\CAPSTONE\dataset\RAM\Val'
+def moveddata(source_dir, folder, pathTrain, pathTest, pathVal):
+    #Membuat direktori tujuan jika belum ada
+    if not os.path.exists(pathTrain):
+        os.makedirs(pathTrain)
+
+    if not os.path.exists(pathTest):
+        os.makedirs(pathTest)   
+
+    if not os.path.exists(pathVal):
+        os.makedirs(pathVal)
+
+    
     filelist = os.listdir(source_dir)
     random.shuffle(filelist)
-    os.makedirs(os.path.join(pathtrain, str(folder)), exist_ok= True)
-    os.makedirs(os.path.join(pathtest, str(folder)), exist_ok= True)
-    os.makedirs(os.path.join(pathval, str(folder)), exist_ok= True)
+    os.makedirs(os.path.join(pathTrain, str(folder)), exist_ok= True)
+    os.makedirs(os.path.join(pathTest, str(folder)), exist_ok= True)
+    os.makedirs(os.path.join(pathVal, str(folder)), exist_ok= True)
     num_files = len(filelist)
     num_train = int(0.7*num_files)
     num_val = int(0.2*num_files)
@@ -76,40 +84,49 @@ def moveddata(source_dir, folder):
     # memindahkan file
     for file in train_files:
         sourcepath = os.path.join(source_dir, file)
-        targetpath = os.path.join(pathtrain, str(folder), file)
+        targetpath = os.path.join(pathTrain, str(folder), file)
         shutil.move(sourcepath, targetpath) 
 
     for file in val_files:
         sourcepath = os.path.join(source_dir, file)
-        targetpath = os.path.join(pathval, str(folder), file)
+        targetpath = os.path.join(pathVal, str(folder), file)
         shutil.move(sourcepath, targetpath) 
 
     for file in test_files:
         sourcepath = os.path.join(source_dir, file)
-        targetpath = os.path.join(pathtest, str(folder), file)
+        targetpath = os.path.join(pathTest, str(folder), file)
         shutil.move(sourcepath, targetpath) 
+    print("-"*30)
+    print("Remove file sucessfull".center(30))
 
-    print("remove file sucessfull")
+folder = str(200) # ganti sesuai nama datanya apa, misalnya 1, maka hasil foldernya train = 1, val = 1, test = 1
 
-folder = str(50) # ganti sesuai nama datanya apa
+# sipakan path / directory / folder untuk spilt data train, val, test [70, 20, 10]
+pathTrain = r'F:\CAPSTONE\dataset\RAM\Train'
+pathVal = r'F:\CAPSTONE\dataset\RAM\Val'
+pathTest = r'F:\CAPSTONE\dataset\RAM\Test'
+
 # menentukan path yang di pakai
-path1 = r'F:\CAPSTONE\dataset\ramresize\20230505_133731.jpg'
-path2 = fr"F:\CAPSTONE\dataset\mencobacodebaru\{folder}"
-path3 = fr"F:\CAPSTONE\dataset\Augmentasi\{folder}"
-path4 = fr"F:\CAPSTONE\dataset\Done\{folder}"
-
-jumlah = 100
+sourceImage = r"F:\CAPSTONE\dataset\PERSON\Sample1_1.jpg"
+targetReproducePath = fr"F:\CAPSTONE\dataset\UJI\{folder}"
+targetAugemtasiPath = fr"F:\CAPSTONE\dataset\AUG\{folder}"
+# jumlah gambar yang ingin di perbanyak
+jumlah = 1
 
 try:
-    duplicate(path1, path2, jumlah)
+    # ini bisa di kasih comment pakai "#" kalo gambarnya udah banyak dan perlu proses augmentasi aja
+    duplicate(sourceImage, targetReproducePath, jumlah)
     #time.sleep(1/10)
-    aug_images(path2, path3)
+    # ini buat di augmentasi jadi dikasih effect rotate, grayscale dll
+    aug_images(targetReproducePath, targetAugemtasiPath)
+    print("-"*30)
+    print(f"Augemtasi gambar ke - {folder}")
     #time.sleep(1/10)
 except Exception as e:
     print(f" We got some error : {str(e)}" )
     raise e
 finally:
-    moveddata(path3, folder)
-    print(f"augemtasi gambar ke - {folder}")
-
+    # ini buat splitdata gambar yang udah di augmentasi
+    moveddata(targetAugemtasiPath, folder,pathTrain, pathVal, pathTest)
+    print("-"*30)
 # ini buat foldernya manual, nanti tinggal copy as path aja ya
